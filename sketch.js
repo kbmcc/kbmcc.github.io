@@ -1,12 +1,149 @@
-function setup() {
-  createCanvas(windowWidth, windowHeight);
-}
 
-function draw() {
-  if (mouseIsPressed) {
-    fill(0);
-  } else {
-    fill(255);
-  }
-  ellipse(mouseX, mouseY, 80, 80);
-}
+    // Array to store our bubble objects
+    let bubbles = [];
+
+    function setup() {
+      createCanvas(800, 600);
+      
+      // Create multiple bubble objects using object literal syntax
+      // Each bubble has properties (data) stored as key-value pairs
+      for (let i = 0; i < 15; i++) {
+        let bubble = {
+          // Position properties
+          x: random(width),
+          y: random(height),
+          
+          // Velocity properties (speed and direction)
+          speedX: random(-3, 3),
+          speedY: random(-3, 3),
+          
+          // Visual properties
+          diameter: random(30, 80),
+          r: random(100, 255),
+          g: random(100, 255),
+          b: random(100, 255),
+          alpha: random(150, 255),
+          
+          // Behavior as functions (methods) inside the object
+          // These are key-function pairs
+          
+          // Method to update position
+          move: function() {
+            // 'this' refers to the current bubble object
+            this.x += this.speedX;
+            this.y += this.speedY;
+          },
+          
+          // Method to bounce off edges
+          bounce: function() {
+            // Check horizontal boundaries
+            if (this.x < 0 || this.x > width) {
+              this.speedX *= -1;
+            }
+            
+            // Check vertical boundaries
+            if (this.y < 0 || this.y > height) {
+              this.speedY *= -1;
+            }
+            
+            // Keep bubbles within bounds
+            this.x = constrain(this.x, 0, width);
+            this.y = constrain(this.y, 0, height);
+          },
+          
+          // Method to display the bubble
+          display: function() {
+            // Use object properties with 'this' keyword
+            fill(this.r, this.g, this.b, this.alpha);
+            noStroke();
+            circle(this.x, this.y, this.diameter);
+            
+            // Add a highlight for depth
+            fill(255, 255, 255, 100);
+            circle(this.x - this.diameter/6, this.y - this.diameter/6, this.diameter/3);
+          }
+        };
+        
+        // Add this bubble object to our array
+        bubbles.push(bubble);
+      }
+    }
+
+    function draw() {
+      background(30, 30, 50);
+      
+      // Display instructions
+      fill(255);
+      textSize(16);
+      textAlign(LEFT);
+      text("Objects Demo: Bubbles with properties and behavior", 10, 25);
+      text("Press SPACE to add a new bubble", 10, 50);
+      text("Click to add a bubble at mouse position", 10, 75);
+      
+      // Use a for loop to iterate over the array of bubble objects
+      for (let i = 0; i < bubbles.length; i++) {
+        // Call each bubble's methods
+        // The methods use 'this' to access the object's properties
+        bubbles[i].move();
+        bubbles[i].bounce();
+        bubbles[i].display();
+      }
+      
+      // Display count
+      fill(255);
+      textAlign(RIGHT);
+      text("Bubbles: " + bubbles.length, width - 10, 25);
+    }
+
+    // Add a new bubble when space is pressed
+    function keyPressed() {
+      if (key === ' ') {
+        addBubble(random(width), random(height));
+      }
+    }
+
+    // Add a new bubble when mouse is clicked
+    function mousePressed() {
+      addBubble(mouseX, mouseY);
+    }
+
+    // Helper function to create a new bubble object
+    function addBubble(xPos, yPos) {
+      let newBubble = {
+        x: xPos,
+        y: yPos,
+        speedX: random(-3, 3),
+        speedY: random(-3, 3),
+        diameter: random(30, 80),
+        r: random(100, 255),
+        g: random(100, 255),
+        b: random(100, 255),
+        alpha: random(150, 255),
+        
+        move: function() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+        },
+        
+        bounce: function() {
+          if (this.x < 0 || this.x > width) {
+            this.speedX *= -1;
+          }
+          if (this.y < 0 || this.y > height) {
+            this.speedY *= -1;
+          }
+          this.x = constrain(this.x, 0, width);
+          this.y = constrain(this.y, 0, height);
+        },
+        
+        display: function() {
+          fill(this.r, this.g, this.b, this.alpha);
+          noStroke();
+          circle(this.x, this.y, this.diameter);
+          fill(255, 255, 255, 100);
+          circle(this.x - this.diameter/6, this.y - this.diameter/6, this.diameter/3);
+        }
+      };
+      
+      bubbles.push(newBubble);
+    }
