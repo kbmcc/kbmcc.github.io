@@ -154,6 +154,211 @@
       
       bubbles.push(newBubble);
     }
+    
+/*
+ * ============================================================
+ *  Class:       CS110 — Creative Coding
+ *  Name:        [Your Name]
+ *  Email:       [your@email.edu]
+ *  Assignment:  Assignment 3 — Interactive Drawing Tool
+ * ============================================================
+ *  HOW TO INTERACT:
+ *  - Click and drag on the canvas to draw.
+ *  - Select a color from the palette swatches.
+ *  - Adjust brush size and opacity with the sliders.
+ *  - Press [E] or click "Erase" to switch to eraser mode.
+ *  - Press [C] or click "Clear" to wipe the canvas.
+ *  - Press [S] or click "Save" to download the image.
+ *  - AUTO FEATURE: The brush hue automatically cycles through
+ *    the full color spectrum as you draw. Palette swatches set
+ *    the starting hue; the Hue Speed slider controls how fast
+ *    it shifts. The Lissajous orbit on the brush tip also
+ *    continues as before.
+ * ============================================================
+ */
+
+// ---- Global State ----
+let currentHue = 260;   // current live hue (0–360), advances while drawing
+let hueSpeed   = 1.2;   // degrees per frame while drawing
+let brushSize  = 12;
+let brushOpacity = 180;
+let mode = 'draw';  // 'draw' | 'erase'
+let t = 0;          // time for auto-orbit animation
+let lastX, lastY;
+let isDrawing = false;
+
+// Palette: hue starting points (degrees) + display label
+const PALETTE = [
+  { hue: 260, label: 'violet' },
+  { hue: 195, label: 'cyan'   },
+  { hue: 330, label: 'rose'   },
+  { hue:  40, label: 'amber'  },
+  { hue: 145, label: 'mint'   },
+  { hue:  10, label: 'coral'  },
+  { hue: 300, label: 'orchid' },
+  { hue:  60, label: 'gold'   },
+];
+
+function hueToRgb(h) {
+  // Convert hue (0-360), sat=85%, val=100% → rgb string
+  const s = 0.85, v = 1.0;
+  const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+  let r, g, b;
+  if      (h < 60)  { r=c; g=x; b=0; }
+  else if (h < 120) { r=x; g=c; b=0; }
+  else if (h < 180) { r=0; g=c; b=x; }
+  else if (h < 240) { r=0; g=x; b=c; }
+  else if (h < 300) { r=x; g=0; b=c; }
+  else              { r=c; g=0; b=x; }
+  return `rgb(${Math.round((r+m)*255)},${Math.round((g+m)*255)},${Math.round((b+m)*255)})`;
+}
+
+// Build palette UI
+const paletteEl = document.getElementById('palette');
+PALETTE.forEach(({ hue }, i) => {
+  const sw = document.createElement('div');
+  sw.className = 'swatch' + (i === 0 ? ' selected' : '');
+  sw.style.background = hueToRgb(hue);
+  sw.onclick = () => {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+    currentHue = hue;
+  };
+  paletteEl.appendChild(sw);
+});
+
+function updateSize(v)     { brushSize = parseInt(v); }
+function updateOpacity(v)  { brushOpacity = parseInt(v); }
+function updateHueSpeed(v) { hueSpeed = parseFloat(v); }
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-draw').classList.toggle('active', m === 'draw');
+  document.getElementById('btn-erase').classList.toggle('active', m === 'erase');
+}
+
+function clearCanvas() {
+  if (window._p5instance) window._p5instance.clearCanvas();
+}
+
+function saveSketch() {
+  if (window._p5instance) window._p5instance.save('cosmic_brush.png');
+}
+
+// Set initial button states
+setMode('draw');
+
+// ---- p5.js Sketch ----
+// Helper: hue (0-360) → [r,g,b] 0-255 for p5 RGB mode cursor
+function hueToP5RGB(h) {
+  const s = 0.85, v = 1.0;
+  const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+  let r, g, b;
+  if      (h < 60)  { r=c; g=x; b=0; }
+  else if (h < 120) { r=x; g=c; b=0; }
+  else if (h < 180) { r=0; g=c; b=x; }
+  else if (h < 240) { r=0; g=x; b=c; }
+  else if (h < 300) { r=x; g=0; b=c; }
+  else              { r=c; g=0; b=x; }
+  return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+}
+
+new p5(function(p) {
+  window._p5instance = p;
+
+  let pg; // off-screen graphics buffer (persistent drawing)
+
+  p.clearCanvas = () => {
+    pg.background(240, 30, 7);
+  };
+
+  p.setup = function() {
+    const cvs = p.createCanvas(860, 520);
+    cvs.parent('canvas-wrap');
+    cvs.style('display', 'block');
+
+    pg = p.createGraphics(860, 520);
+    pg.colorMode(p.HSB, 360, 100, 100, 255);
+    pg.background(240, 30, 7);  // deep navy in HSB
+    pg.strokeCap(p.ROUND);
+
+    p.noSmooth(); // crisp strokes
+  };
+
+  p.draw = function() {
+    t += 0.008;
+
+    // Auto-orbit offset (Lissajous — not user-controlled)
+    const orbitR = brushSize * 0.55;
+    const ox = Math.sin(t * 1.3) * orbitR;
+    const oy = Math.cos(t * 0.7) * orbitR;
+
+    // Tip position = cursor + orbit offset
+    const tx = p.mouseX + ox;
+    const ty = p.mouseY + oy;
+
+    if (isDrawing && p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+      if (mode === 'erase') {
+        pg.noStroke();
+        pg.fill(240, 30, 7);
+        pg.ellipse(tx, ty, brushSize * 2.4, brushSize * 2.4);
+      } else {
+        // Advance hue each frame while drawing
+        currentHue = (currentHue + hueSpeed) % 360;
+
+        pg.stroke(currentHue, 85, 100, brushOpacity);
+        pg.strokeWeight(brushSize);
+        pg.noFill();
+
+        const prevTx = (lastX ?? p.mouseX) + Math.sin((t - 0.008) * 1.3) * orbitR;
+        const prevTy = (lastY ?? p.mouseY) + Math.cos((t - 0.008) * 0.7) * orbitR;
+        pg.line(prevTx, prevTy, tx, ty);
+      }
+    }
+
+    lastX = p.mouseX;
+    lastY = p.mouseY;
+
+    // Draw persistent buffer to screen
+    p.image(pg, 0, 0);
+
+    // Draw cursor indicator — colored to live hue
+    const [cr, cg, cb] = hueToP5RGB(currentHue);
+    p.noFill();
+    p.stroke(cr, cg, cb, 130);
+    p.strokeWeight(1.5);
+    p.ellipse(tx, ty, brushSize * 2, brushSize * 2);
+
+    // Orbit crosshair dot
+    p.fill(255, 255, 255, 120);
+    p.noStroke();
+    p.ellipse(tx, ty, 3, 3);
+
+    // Mouse center dot
+    p.fill(255, 255, 255, 50);
+    p.ellipse(p.mouseX, p.mouseY, 4, 4);
+  };
+
+  p.mousePressed = function() {
+    if (p.mouseX >= 0 && p.mouseX <= p.width && p.mouseY >= 0 && p.mouseY <= p.height) {
+      isDrawing = true;
+    }
+  };
+
+  p.mouseReleased = function() {
+    isDrawing = false;
+  };
+
+  p.keyPressed = function() {
+    if (p.key === 's' || p.key === 'S') p.save('cosmic_brush.png');
+    if (p.key === 'c' || p.key === 'C') p.clearCanvas();
+    if (p.key === 'e' || p.key === 'E') {
+      setMode(mode === 'erase' ? 'draw' : 'erase');
+    }
+  };
+});
+
+
   </script>
 </body>
 </html>
