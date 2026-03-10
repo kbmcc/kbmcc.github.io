@@ -3,7 +3,7 @@
     let bubbles = [];
 
     function setup() {
-      createCanvas(800, 600);
+      createCanvas(800, 800);
       
       // Create multiple bubble objects using object literal syntax
       // Each bubble has properties (data) stored as key-value pairs
