@@ -5,71 +5,69 @@
   <style> body {padding: 0; margin: 10;} </style>
 </head>
 <body>
-
   <script>
-  // Create the global variables: playing, video, and button.
-// Set playing to false so the video loads in as paused.
-let playing = false;
-let video;
-let button;
-let img;
+  let playing = false;
+  let video;
+  let img;
 
-function preload() {
-  img = loadImage('/assets/crows_17C_Japan.png');
-// Upload the video in the canvas's assets directory, and
-  // use the createVideo() function to load in the video to the code.
-  // This createVideo() function will build a p5.MediaElement class.
-  // It's best to upload multiple video formats so the video
-  // is visible within different browsers.
-  video = createVideo(['/assets/JoyDivisionShesLost Control.mp4']);
-}
-    
-function setup() {
-  // Use the noCanvas() function to remove the canvas.
-  // noCanvas();
-createCanvas(windowWidth, windowHeight);
- 
-  //adjusted the video width and height to match window dimensions
-  video.size(width, height);
-  // Create a button next to the video that says 'play.'
-  button = createButton('play');
-
-  // The button will call the toggleVid() function
-  // whenever it is pressed.
-  button.mousePressed(toggleVid);
-    // By default, the video will render as its own DOM element.
-  // Use the hide() method to remove the DOM instance of the video.
-  video.hide();
-}
-
-function draw() {
-  background(0);
-  
-  image(img, 0, 0, width, height);           // Draw the image
- // image(vid, 0, 0, width, height);           // Draw the video as a texture
-}
-    
-    function toggleVid() {
-  // If the video is playing, pause the video with
-  // the pause() method and make the button's text say 'play.'
-  if (playing == true) {
-    video.pause();
-    button.html('play');
-
-    // If the video is paused, play the video with
-    // the loop() method and make the button's text say 'pause.'
-  } else {
-    video.loop();
-    button.html('pause');
+  function preload() {
+    img = loadImage('/assets/crows_17C_Japan.png');
+    video = createVideo(['/assets/JoyDivisionShesLostControl.mp4']);
   }
 
-  // Once the video playing status has been toggled,
-  // switch playing to the opposite boolean value.
-  playing = !playing;
-}
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    video.size(width, height);
+    video.hide();
+  }
 
+  function draw() {
+    background(0);
+    image(img, 0, 0, width, height);
+    image(video, 0, 0, width, height);
 
+    if (!playing) {
+      drawPlayButton();
+    }
+  }
 
+  function drawPlayButton() {
+    let cx = width / 2;
+    let cy = height / 2;
+    let r = 40;
+
+    // Semi-transparent circle background
+    fill(0, 0, 0, 150);
+    noStroke();
+    circle(cx, cy, r * 2);
+
+    // Triangle play icon
+    fill(255);
+    triangle(
+      cx - r * 0.3, cy - r * 0.5,
+      cx - r * 0.3, cy + r * 0.5,
+      cx + r * 0.6, cy
+    );
+  }
+
+  function mousePressed() {
+    let cx = width / 2;
+    let cy = height / 2;
+    let r = 40;
+
+    if (dist(mouseX, mouseY, cx, cy) < r) {
+      toggleVid();
+    }
+  }
+
+  function toggleVid() {
+    if (playing) {
+      video.pause();
+    } else {
+      video.loop();
+    }
+    playing = !playing;
+  }
   </script>
 </body>
 </html>
