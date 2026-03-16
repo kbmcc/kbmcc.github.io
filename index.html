@@ -38,7 +38,12 @@ createCanvas(windowWidth, windowHeight);
   // whenever it is pressed.
   button.mousePressed(toggleVid);
 }
-
+function draw() {
+  background(0);
+  
+  image(img, 0, 0, width, height);           // Draw the image
+ // image(vid, 0, 0, width, height);           // Draw the video as a texture
+}
 function toggleVid() {
   // If the video is playing, pause the video with
   // the pause() method and make the button's text say 'play.'
