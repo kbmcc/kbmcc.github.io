@@ -37,6 +37,9 @@ createCanvas(windowWidth, windowHeight);
   // The button will call the toggleVid() function
   // whenever it is pressed.
   button.mousePressed(toggleVid);
+    // By default, the video will render as its own DOM element.
+  // Use the hide() method to remove the DOM instance of the video.
+  video.hide();
 }
 
 function draw() {
