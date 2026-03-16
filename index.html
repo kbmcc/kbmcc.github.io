@@ -12,7 +12,7 @@
 
   function preload() {
     img = loadImage('/assets/crows_17C_Japan.png');
-    video = createVideo(['/assets/JoyDivisionShesLostControl.mp4']);
+    video = createVideo(['/assets/JoyDivisionShesLost Control.mp4']);
   }
 
   function setup() {
@@ -23,8 +23,14 @@
 
   function draw() {
     background(0);
-    image(img, 0, 0, width, height);
-    image(video, 0, 0, width, height);
+
+    if (!playing) {
+      // Show crow image as poster before video plays
+      image(img, 0, 0, width, height);
+    } else {
+      // Show video once playing
+      image(video, 0, 0, width, height);
+    }
 
     if (!playing) {
       drawPlayButton();
@@ -36,12 +42,10 @@
     let cy = height / 2;
     let r = 40;
 
-    // Semi-transparent circle background
     fill(0, 0, 0, 150);
     noStroke();
     circle(cx, cy, r * 2);
 
-    // Triangle play icon
     fill(255);
     triangle(
       cx - r * 0.3, cy - r * 0.5,
