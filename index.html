@@ -72,6 +72,7 @@ if (playing) {
     if (playing) {
       video.pause();
     } else {
+     video.volume(1);  // ← Unmute at the moment of user interaction
       video.play();   // ← Added: explicitly starts playback
       video.loop();   // ← Then sets it to loop
     }
