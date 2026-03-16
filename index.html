@@ -19,16 +19,15 @@
     createCanvas(windowWidth, windowHeight);
     video.size(width, height);
     video.hide();
+    video.volume(0);  // ← Must be set before play() or browsers will block it
   }
 
   function draw() {
     background(0);
 
     if (!playing) {
-      // Show crow image as poster before video plays
       image(img, 0, 0, width, height);
     } else {
-      // Show video once playing
       image(video, 0, 0, width, height);
     }
 
@@ -40,7 +39,7 @@
   function drawPlayButton() {
     let cx = width / 2;
     let cy = height / 2;
-    let r = 40;
+    let r = 50;  // ← Larger hit area, easier to click
 
     fill(0, 0, 0, 150);
     noStroke();
@@ -57,7 +56,7 @@
   function mousePressed() {
     let cx = width / 2;
     let cy = height / 2;
-    let r = 40;
+    let r = 50;
 
     if (dist(mouseX, mouseY, cx, cy) < r) {
       toggleVid();
@@ -68,7 +67,8 @@
     if (playing) {
       video.pause();
     } else {
-      video.loop();
+      video.play();   // ← Added: explicitly starts playback
+      video.loop();   // ← Then sets it to loop
     }
     playing = !playing;
   }
