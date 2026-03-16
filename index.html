@@ -57,10 +57,15 @@
     let cx = width / 2;
     let cy = height / 2;
     let r = 50;
-
+if (playing) {
+    // Any click pauses the video
+    toggleVid();
+  } else {
+    // Only a click on the button starts the video
     if (dist(mouseX, mouseY, cx, cy) < r) {
       toggleVid();
     }
+  }
   }
 
   function toggleVid() {
