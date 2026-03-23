@@ -6,49 +6,72 @@
 </head>
 <body>
   <script>
- function preload(){
-  sound = loadSound('/assets/JoyDivisionShesLost%20Control.mp4);
+// Coding Train / Daniel Shiffman
+// Sound Visualization:  Frequency analysis with FFT
+
+// Code for https://www.youtube.com/watch?v=2O3nm0Nvbi4
+
+// "Just Like a Rainbow" by the Columbians (rainbow.mp3) can be downloaded from
+// https://github.com/CodingTrain/website-archive/blob/main/Tutorials/P5JS/p5.js_sound/17.1_playSong/rainbow.mp3
+
+let song;
+let fft;
+let w;
+let button;
+
+function preload() {
+  song = loadSound("/assets/JoyDivisionShesLost Control.mp4");
 }
 
-function setup(){
-  let cnv = createCanvas(100,100);
-  cnv.mouseClicked(togglePlay);
-  fft = new p5.FFT();
-  sound.amp(0.2);
+function setup() {
+  createCanvas(256, 256);
+  colorMode(HSB);
+  angleMode(DEGREES);
+  button = createButton("toggle");
+  button.mousePressed(toggleSong);
+  song.play();
+
+  // Set smoothing to 0, 256 bins
+  fft = new p5.FFT(0.9, 64);
+  w = width / 64;
 }
 
-function draw(){
-  background(220);
-
-  let spectrum = fft.analyze();
-  noStroke();
-  fill(255, 0, 255);
-  for (let i = 0; i< spectrum.length; i++){
-    let x = map(i, 0, spectrum.length, 0, width);
-    let h = -height + map(spectrum[i], 0, 255, height, 0);
-    rect(x, height, width / spectrum.length, h )
-  }
-
-  let waveform = fft.waveform();
-  noFill();
-  beginShape();
-  stroke(20);
-  for (let i = 0; i < waveform.length; i++){
-    let x = map(i, 0, waveform.length, 0, width);
-    let y = map( waveform[i], -1, 1, 0, height);
-    vertex(x,y);
-  }
-  endShape();
-
-  text('tap to play', 20, 20);
-}
-
-function togglePlay() {
-  if (sound.isPlaying()) {
-    sound.pause();
+function toggleSong() {
+  if (song.isPlaying()) {
+    song.pause();
   } else {
-    sound.loop();
+    song.play();
   }
+}
+
+function draw() {
+  background(0);
+  let spectrum = fft.analyze();
+  // console.log(spectrum);
+  // stroke(255);
+  for (let i = 0; i < spectrum.length; i++) {
+    let ampl = spectrum[i];
+    fill(i, 255, 255);
+    let y = map(ampl, 0, 256, height, 0);
+    rect(i*w, y, w, height - y);
+  }
+  // Default length is 1024;
+  // console.log(spectrum.length);
+
+  // translate(width / 2, height / 2);
+  // //beginShape();
+  // for (let i = 0; i < spectrum.length; i++) {
+  //   let angle = map(i, 0, spectrum.length, 0, 360);
+  //   let ampl = spectrum[i];
+  //   let r = map(ampl, 0, 256, 20, 100);
+  //   //fill(i, 255, 255);
+  //   let x = r * cos(angle);
+  //   let y = r * sin(angle);
+  //   stroke(i, 255, 255);
+  //   line(0, 0, x, y);
+  //   //vertex(x, y);
+  // }
+  // //endShape();
 }
   </script>
 </body>
