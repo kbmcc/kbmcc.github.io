@@ -6,78 +6,50 @@
 </head>
 <body>
   <script>
-  let playing = false;
-  let video;
-  let img;
+ function preload(){
+  sound = loadSound('/assets/JoyDivisionShesLost%20Control.mp4);
+}
 
-  function preload() {
-    img = loadImage('/assets/crows_17C_Japan.png');
-    video = createVideo(['/assets/JoyDivisionShesLost Control.mp4']);
+function setup(){
+  let cnv = createCanvas(100,100);
+  cnv.mouseClicked(togglePlay);
+  fft = new p5.FFT();
+  sound.amp(0.2);
+}
+
+function draw(){
+  background(220);
+
+  let spectrum = fft.analyze();
+  noStroke();
+  fill(255, 0, 255);
+  for (let i = 0; i< spectrum.length; i++){
+    let x = map(i, 0, spectrum.length, 0, width);
+    let h = -height + map(spectrum[i], 0, 255, height, 0);
+    rect(x, height, width / spectrum.length, h )
   }
 
-  function setup() {
-    createCanvas(windowWidth, windowHeight);
-    video.size(width, height);
-    video.hide();
-   // video.volume(0);  // ← Must be set before play() or browsers will block it
+  let waveform = fft.waveform();
+  noFill();
+  beginShape();
+  stroke(20);
+  for (let i = 0; i < waveform.length; i++){
+    let x = map(i, 0, waveform.length, 0, width);
+    let y = map( waveform[i], -1, 1, 0, height);
+    vertex(x,y);
   }
+  endShape();
 
-  function draw() {
-    background(0);
+  text('tap to play', 20, 20);
+}
 
-    if (!playing) {
-      image(img, 0, 0, width, height);
-    } else {
-      image(video, 0, 0, width, height);
-    }
-
-    if (!playing) {
-      drawPlayButton();
-    }
-  }
-
-  function drawPlayButton() {
-    let cx = width / 2;
-    let cy = height / 2;
-    let r = 50;  // ← Larger hit area, easier to click
-
-    fill(0, 0, 0, 150);
-    noStroke();
-    circle(cx, cy, r * 2);
-
-    fill(255);
-    triangle(
-      cx - r * 0.3, cy - r * 0.5,
-      cx - r * 0.3, cy + r * 0.5,
-      cx + r * 0.6, cy
-    );
-  }
-
-  function mousePressed() {
-    let cx = width / 2;
-    let cy = height / 2;
-    let r = 50;
-if (playing) {
-    // Any click pauses the video
-    toggleVid();
+function togglePlay() {
+  if (sound.isPlaying()) {
+    sound.pause();
   } else {
-    // Only a click on the button starts the video
-    if (dist(mouseX, mouseY, cx, cy) < r) {
-      toggleVid();
-    }
+    sound.loop();
   }
-  }
-
-  function toggleVid() {
-    if (playing) {
-      video.pause();
-    } else {
-     video.volume(1);  // ← Unmute at the moment of user interaction
-      video.play();   // ← Added: explicitly starts playback
-      video.loop();   // ← Then sets it to loop
-    }
-    playing = !playing;
-  }
+}
   </script>
 </body>
 </html>
