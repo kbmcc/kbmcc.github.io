@@ -1,79 +1,161 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
- <link rel="stylesheet" type="text/css" href="css/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f2ea">
+  <title>The Texas Shift — 2018 to 2026</title>
+  <link rel="stylesheet" href="styles.css?v=5">
+  <script defer src="libraries/p5.js"></script>
+  <script defer src="sketch.js?v=8"></script>
 </head>
 <body>
-  <script>
-// Coding Train / Daniel Shiffman
-// Sound Visualization:  Frequency analysis with FFT
+  <main>
+    <header class="masthead">
+      <a class="wordmark" href="#top" aria-label="The Texas Shift home">FIELD NOTES <span>NO. 01</span></a>
+      <span class="masthead-topic">TEXAS · GOVERNOR · MIDTERMS</span>
+    </header>
 
-// Code for https://www.youtube.com/watch?v=2O3nm0Nvbi4
+    <section class="intro" id="top" aria-labelledby="page-title">
+      <div class="intro-copy">
+        <p class="eyebrow"><span class="eyebrow-mark"></span> A county-by-county comparison</p>
+        <h1 id="page-title">The Texas<br><em>shift</em></h1>
+        <p class="dek">Compare county shifts from the 2018 and 2022 governor’s races, trace Texas officeholder party balance across 80 years, and see the 2026 midterm outcome.</p>
+      </div>
+      <div class="intro-note">
+        <span class="note-number">’18 <span aria-hidden="true">→</span> ’22</span>
+        <p>County margins,<br>side by side.</p>
+        <span class="note-rule"></span>
+        <span class="note-caption">THEN: STATEWIDE ’26</span>
+      </div>
+    </section>
 
-// "Just Like a Rainbow" by the Columbians (rainbow.mp3) can be downloaded from
-// https://github.com/CodingTrain/website-archive/blob/main/Tutorials/P5JS/p5.js_sound/17.1_playSong/rainbow.mp3
+    <section class="summary" aria-label="Key findings">
+      <article class="stat">
+        <span class="stat-label">COUNTIES COMPARED</span>
+        <strong id="matched-count">—</strong>
+        <span class="stat-note">of 254 Texas counties</span>
+      </article>
+      <article class="stat">
+        <span class="stat-label">SHIFTED REPUBLICAN</span>
+        <strong id="republican-count">—</strong>
+        <span class="stat-note">counties since 2018</span>
+      </article>
+      <article class="stat">
+        <span class="stat-label">MEDIAN COUNTY SWING</span>
+        <strong id="median-swing">—</strong>
+        <span class="stat-note">percentage points toward the GOP</span>
+      </article>
+    </section>
 
-let song;
-let fft;
-let w;
-let button;
+    <section class="ap-result" aria-labelledby="ap-result-title">
+      <div class="ap-result-year">2026</div>
+      <div class="ap-result-copy">
+        <p class="eyebrow">AP-REPORTED STATEWIDE RESULT</p>
+        <h2 id="ap-result-title">Gina Hinojosa won the Texas governor’s race.</h2>
+        <p>The Associated Press reported Hinojosa’s victory over incumbent Greg Abbott. This statewide result is separate from the county-level 2018–2022 comparison below.</p>
+      </div>
+      <a class="ap-result-link" href="https://apnews.com/article/texas-governor-election-hinojosa-abbott-c9a0ffa1ec3cd599f9bc304ae26268a2">READ AP’S REPORT <span aria-hidden="true">↗</span></a>
+    </section>
 
-function preload() {
-  song = loadSound("/assets/JoyDivisionShesLost Control.mp4");
-}
+    <section class="party-history" aria-labelledby="party-history-title">
+      <div class="party-history-heading">
+        <p class="eyebrow">80 YEARS OF TEXAS OFFICEHOLDERS</p>
+        <h2 id="party-history-title">A changing balance of power.</h2>
+        <p>Compare the party makeup of the governor’s office, Texas’s U.S. Senate delegation, its U.S. House delegation, and the Texas House of Representatives.</p>
+      </div>
 
-function setup() {
-  createCanvas(256, 256);
-  colorMode(HSB);
-  angleMode(DEGREES);
-  button = createButton("toggle");
-  button.mousePressed(toggleSong);
-  song.play();
+      <div class="party-timeline-picker">
+        <label for="party-year">EXPLORE A YEAR</label>
+        <input id="party-year" type="range" min="1947" max="2026" step="1" value="2026" aria-describedby="party-year-note">
+        <output id="party-year-output" for="party-year">2026 · projected</output>
+      </div>
 
-  // Set smoothing to 0, 256 bins
-  fft = new p5.FFT(0.9, 64);
-  w = width / 64;
-}
+      <div class="party-counts" id="party-counts" aria-live="polite">
+        <article class="party-count-card" data-office="governor">
+          <h3>Governor</h3>
+          <p><span class="count-dem">—</span> D <span class="count-separator">/</span> <span class="count-rep">—</span> R</p>
+          <span class="count-other"></span>
+        </article>
+        <article class="party-count-card" data-office="usSenate">
+          <h3>U.S. Senate</h3>
+          <p><span class="count-dem">—</span> D <span class="count-separator">/</span> <span class="count-rep">—</span> R</p>
+          <span class="count-other"></span>
+        </article>
+        <article class="party-count-card" data-office="usHouse">
+          <h3>U.S. House delegation</h3>
+          <p><span class="count-dem">—</span> D <span class="count-separator">/</span> <span class="count-rep">—</span> R</p>
+          <span class="count-other"></span>
+        </article>
+        <article class="party-count-card" data-office="texasHouse">
+          <h3>Texas House</h3>
+          <p><span class="count-dem">—</span> D <span class="count-separator">/</span> <span class="count-rep">—</span> R</p>
+          <span class="count-other"></span>
+        </article>
+      </div>
 
-function toggleSong() {
-  if (song.isPlaying()) {
-    song.pause();
-  } else {
-    song.play();
-  }
-}
+      <div class="party-chart-wrap">
+        <div id="party-timeline-status" class="party-timeline-status" role="status" hidden></div>
+        <div id="party-timeline" class="party-timeline" role="group" aria-label="Annual Texas officeholder party composition from 1947 through 2026"></div>
+      </div>
 
-function draw() {
-  background(0);
-  let spectrum = fft.analyze();
-  // console.log(spectrum);
-  // stroke(255);
-  for (let i = 0; i < spectrum.length; i++) {
-    let ampl = spectrum[i];
-    fill(i, 255, 255);
-    let y = map(ampl, 0, 256, height, 0);
-    rect(i*w, y, w, height - y);
-  }
-  // Default length is 1024;
-  // console.log(spectrum.length);
+      <p class="party-timeline-note" id="party-year-note">Governors and members of Congress are counted on July 1. Historical Texas House counts are measured at the start of each regular session; the previous session’s count is carried through the off-year. The outlined 2026 column projects the party balance from unofficial election returns; winners take office in 2027. Bars share a fixed scale within each office: gray is another party, and unfilled space reflects seats below that scale.</p>
+    </section>
 
-  // translate(width / 2, height / 2);
-  // //beginShape();
-  // for (let i = 0; i < spectrum.length; i++) {
-  //   let angle = map(i, 0, spectrum.length, 0, 360);
-  //   let ampl = spectrum[i];
-  //   let r = map(ampl, 0, 256, 20, 100);
-  //   //fill(i, 255, 255);
-  //   let x = r * cos(angle);
-  //   let y = r * sin(angle);
-  //   stroke(i, 255, 255);
-  //   line(0, 0, x, y);
-  //   //vertex(x, y);
-  // }
-  // //endShape();
-}
-  </script>
+    <section class="chart-section" aria-labelledby="chart-title">
+      <div class="chart-heading">
+        <div>
+          <p class="eyebrow chart-eyebrow">THE VIEW FROM THE COUNTIES</p>
+          <h2 id="chart-title">Not every county moved the same way.</h2>
+        </div>
+        <p class="chart-instruction">Hover a line or choose a county to see its results.</p>
+      </div>
+
+      <div class="chart-controls">
+        <label for="shift-filter">Show
+          <select id="shift-filter">
+            <option value="all">All comparable counties</option>
+            <option value="republican">Shifted Republican</option>
+            <option value="democratic">Shifted Democratic</option>
+          </select>
+        </label>
+        <label for="county-select">Highlight
+          <select id="county-select">
+            <option value="">Choose a county</option>
+          </select>
+        </label>
+        <span class="legend" aria-label="Chart color key">
+          <span><i class="legend-dot red"></i> Shifted Republican</span>
+          <span><i class="legend-dot blue"></i> Shifted Democratic</span>
+        </span>
+      </div>
+
+      <div class="chart-frame">
+        <div id="chart-canvas" aria-label="Interactive slope chart comparing Republican two-party vote margins in the 2018 and 2022 Texas governor elections"></div>
+        <div id="data-status" class="data-status" role="status" hidden></div>
+      </div>
+
+      <div class="county-detail" id="county-detail" aria-live="polite">
+        <span class="detail-label">COUNTY DETAIL</span>
+        <p id="detail-copy">Hover a county line or use the county menu to explore the change.</p>
+      </div>
+      <p class="chart-note">Each line connects a county’s Republican two-party margin in 2018 and 2022. A positive margin means the Republican candidate led; a negative margin means the Democratic candidate led. Color shows the direction of change, not the winner.</p>
+    </section>
+
+    <section class="context" aria-labelledby="context-title">
+      <p class="eyebrow">READING THE DATA</p>
+      <h2 id="context-title">A useful comparison, with a clear limit.</h2>
+      <p>The OpenElections 2022 precinct file has major-party gubernatorial results for 101 counties. This comparison uses the 97 counties with usable Republican and Democratic totals in <em>both</em> 2018 and 2022—not a complete statewide count. Other candidates are excluded when calculating the two-party margin.</p>
+      <p>Precinct results are summed by county. Margin is (Republican votes − Democratic votes) ÷ (Republican votes + Democratic votes); swing is the 2022 margin minus the 2018 margin. The median gives each county equal weight.</p>
+    </section>
+
+    <footer class="footer">
+      <div>
+        <span class="footer-label">DATA &amp; SOURCES</span>
+        <p>County results from <a href="https://github.com/openelections/openelections-data-tx">OpenElections Data TX</a>: <a href="https://github.com/openelections/openelections-data-tx/blob/master/2018/20181106__tx__general__precinct.csv">2018 precinct file</a> · <a href="https://github.com/openelections/openelections-data-tx/blob/master/2022/20221108__tx__general__precinct.csv">2022 precinct file</a>. The timeline uses <a href="https://lrl.texas.gov/legeLeaders/members/partyList.cfm">Texas Legislative Reference Library session counts</a>, <a href="https://github.com/unitedstates/congress-legislators">historical congressional service records</a>, the <a href="https://www.tsl.texas.gov/ref/abouttx/governors">Texas State Library’s governor chronology</a>, and <a href="https://goelect.txelections.civixapps.com/ivis-enr-ui/races">Texas Secretary of State election returns</a>. The AP reported Gina Hinojosa’s 2026 gubernatorial win in its <a href="https://apnews.com/article/texas-governor-election-hinojosa-abbott-c9a0ffa1ec3cd599f9bc304ae26268a2">election coverage</a>.</p>
+      </div>
+      <a class="back-to-top" href="#top">BACK TO TOP ↑</a>
+    </footer>
+  </main>
 </body>
 </html>
